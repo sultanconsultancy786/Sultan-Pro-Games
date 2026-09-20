@@ -1824,7 +1824,7 @@ function initTrexGame() {
 
     for(let i=0;i<95;i++) stars.push({x:Math.random()*W,y:Math.random()*320,r:Math.random()*1.6+.3,a:Math.random()*.75+.2});
 
-    const boy={x:190,y:groundY-132,w:82,h:132,normalH:132,duckH:70,vy:0,onGround:true,ducking:false};
+    const boy={x:W*.46,y:groundY-148,w:108,h:148,normalH:148,duckH:78,vy:0,onGround:true,ducking:false};
 
     const audio = {
         ctx:null,
@@ -1981,154 +1981,178 @@ function initTrexGame() {
     }
 
     function drawBackground(){
-        // Full Boy Runner scene: deep perspective road, city skyline, lane markings and moving roadside lights.
-        const horizon=groundY-155;
+        // Proper endless runner environment: a centered 3-lane road with strong depth perspective.
+        const horizon=groundY-170;
         const sky=ctx.createLinearGradient(0,0,0,groundY);
-        sky.addColorStop(0,'#020617');sky.addColorStop(.42,'#12304d');sky.addColorStop(.72,'#7c3f4b');sky.addColorStop(1,'#f59e0b');
+        sky.addColorStop(0,'#07111f');sky.addColorStop(.45,'#12385a');sky.addColorStop(.75,'#7b4960');sky.addColorStop(1,'#f0a45a');
         ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
 
-        // Moon / atmospheric glow
-        const glow=ctx.createRadialGradient(W*.72,110,8,W*.72,110,180);
-        glow.addColorStop(0,'rgba(255,235,180,.35)');glow.addColorStop(1,'rgba(255,235,180,0)');
+        // Atmospheric sun/glow.
+        const glow=ctx.createRadialGradient(W*.52,130,5,W*.52,130,220);
+        glow.addColorStop(0,'rgba(255,232,180,.38)');glow.addColorStop(1,'rgba(255,232,180,0)');
         ctx.fillStyle=glow;ctx.fillRect(0,0,W,groundY);
 
-        // Distant city
-        const seed=[.04,.09,.14,.18,.24,.29,.34,.39,.44,.50,.56,.61,.66,.71,.77,.82,.88,.94];
-        seed.forEach((p,i)=>{
-            const bw=38+(i%4)*17,bh=70+(i%6)*28,x=p*W-bw/2,y=horizon-bh;
-            const g=ctx.createLinearGradient(0,y,0,horizon);
-            g.addColorStop(0,i%3===0?'#172554':'#0f172a');g.addColorStop(1,'#020617');
-            ctx.fillStyle=g;ctx.fillRect(x,y,bw,bh);
-            ctx.fillStyle=i%2?'rgba(56,189,248,.42)':'rgba(250,204,21,.42)';
-            for(let wy=y+12;wy<horizon-8;wy+=18){
-                if(((Math.floor(wy)+i*7)%37)<22)ctx.fillRect(x+7,wy,5,7);
-                if(((Math.floor(wy)+i*11)%43)<25)ctx.fillRect(x+bw-12,wy,5,7);
+        // City skyline with windows.
+        const buildings=[
+            [.00,130,70],[.06,90,58],[.115,155,76],[.18,105,62],[.235,180,82],
+            [.30,115,65],[.355,165,72],[.425,100,58],[.49,150,76],[.555,112,60],
+            [.62,175,78],[.70,115,62],[.76,155,72],[.83,100,58],[.89,145,70],[.96,105,58]
+        ];
+        buildings.forEach((b,i)=>{
+            const x=b[0]*W,w=b[2],h=b[1],y=horizon-h;
+            ctx.fillStyle=i%3===0?'#0b1730':'#111b2d';
+            ctx.fillRect(x,y,w,h);
+            for(let wy=y+12;wy<horizon-6;wy+=18){
+                for(let wx=x+9;wx<x+w-7;wx+=18){
+                    if(((Math.floor(wx)+Math.floor(wy)+i*13)%47)<23){
+                        ctx.fillStyle=i%2?'rgba(96,165,250,.62)':'rgba(250,204,21,.58)';
+                        ctx.fillRect(wx,wy,5,7);
+                    }
+                }
             }
         });
 
-        // Elevated road / side barriers
-        ctx.fillStyle='#111827';
-        ctx.beginPath();ctx.moveTo(0,horizon+28);ctx.lineTo(W*.39,horizon+5);ctx.lineTo(W*.61,horizon+5);ctx.lineTo(W,horizon+28);ctx.lineTo(W,groundY);ctx.lineTo(0,groundY);ctx.closePath();ctx.fill();
+        // Sidewalks / barriers.
+        ctx.fillStyle='#101827';
+        ctx.beginPath();
+        ctx.moveTo(0,horizon+22);ctx.lineTo(W*.39,horizon);ctx.lineTo(W*.61,horizon);
+        ctx.lineTo(W,horizon+22);ctx.lineTo(W,groundY);ctx.lineTo(0,groundY);ctx.closePath();ctx.fill();
 
-        // Main running track with strong perspective
-        const roadTop=horizon+18;
-        ctx.fillStyle='#263241';
-        ctx.beginPath();ctx.moveTo(W*.41,roadTop);ctx.lineTo(W*.59,roadTop);ctx.lineTo(W*.98,H);ctx.lineTo(W*.02,H);ctx.closePath();ctx.fill();
+        // Three-lane runner road.
+        const topY=horizon+12;
+        ctx.fillStyle='#263445';
+        ctx.beginPath();
+        ctx.moveTo(W*.41,topY);ctx.lineTo(W*.59,topY);ctx.lineTo(W*.98,H);ctx.lineTo(W*.02,H);ctx.closePath();ctx.fill();
 
-        // Road texture
-        ctx.strokeStyle='rgba(255,255,255,.08)';ctx.lineWidth=2;
-        for(let i=0;i<14;i++){
-            const yy=roadTop+Math.pow(i/13,1.75)*(H-roadTop);
-            ctx.beginPath();ctx.moveTo(W*.12,yy);ctx.lineTo(W*.88,yy);ctx.stroke();
+        // Road shoulders.
+        ctx.strokeStyle='#f59e0b';ctx.lineWidth=7;
+        ctx.beginPath();ctx.moveTo(W*.41,topY);ctx.lineTo(W*.02,H);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(W*.59,topY);ctx.lineTo(W*.98,H);ctx.stroke();
+
+        // Perspective road panels.
+        for(let i=0;i<18;i++){
+            const p=i/18;
+            const yy=topY+Math.pow(p,1.55)*(H-topY);
+            const half=0.09+0.41*p;
+            ctx.strokeStyle='rgba(255,255,255,.08)';
+            ctx.lineWidth=2;
+            ctx.beginPath();ctx.moveTo(W*(.5-half),yy);ctx.lineTo(W*(.5+half),yy);ctx.stroke();
         }
 
-        // Lane dividers — clearly visible and moving
-        const phase=(distance*24)%70;
-        [0.333,0.666].forEach(lane=>{
-            for(let y=roadTop+20-phase;y<H+70;y+=70){
-                const p=(y-roadTop)/(H-roadTop);
-                const half=0.18+0.48*p;
-                const x=W*(lane);
-                const len=10+35*p;
-                ctx.fillStyle='rgba(255,255,255,.92)';
-                ctx.fillRect(x-len/2,y,len,Math.max(4,8*p));
+        // Two animated lane separators.
+        const phase=(distance*30)%95;
+        for(const lane of [-1,1]){
+            for(let y=topY+25-phase;y<H+80;y+=95){
+                const p=Math.min(1,Math.max(0,(y-topY)/(H-topY)));
+                const x=W*(.5+lane*(.09+.41*p));
+                const len=7+25*p;
+                ctx.fillStyle='rgba(255,255,255,.95)';
+                ctx.fillRect(x-len/2,y,len,Math.max(5,7*p));
             }
-        });
+        }
 
-        // Neon edge strips and guard rails
+        // Neon perspective rails and roadside lamps.
         ctx.strokeStyle='#22d3ee';ctx.lineWidth=5;
-        ctx.beginPath();ctx.moveTo(W*.41,roadTop);ctx.lineTo(W*.02,H);ctx.stroke();
-        ctx.beginPath();ctx.moveTo(W*.59,roadTop);ctx.lineTo(W*.98,H);ctx.stroke();
-        ctx.strokeStyle='rgba(148,163,184,.7)';ctx.lineWidth=7;
-        ctx.beginPath();ctx.moveTo(0,horizon+10);ctx.lineTo(W*.39,roadTop);ctx.stroke();
-        ctx.beginPath();ctx.moveTo(W,horizon+10);ctx.lineTo(W*.61,roadTop);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(W*.41,topY);ctx.lineTo(W*.02,H);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(W*.59,topY);ctx.lineTo(W*.98,H);ctx.stroke();
 
-        // Roadside lamps / signs
-        for(let i=0;i<10;i++){
-            const yy=horizon+28+i*48;
-            const p=Math.min(1,(yy-horizon)/(H-horizon));
-            const lx=W*(.37-.29*p), rx=W*(.63+.29*p);
-            ctx.fillStyle='rgba(34,211,238,.8)';
-            ctx.fillRect(lx,yy,3,20+30*p);ctx.fillRect(rx,yy,3,20+30*p);
-            ctx.fillStyle='rgba(34,211,238,.35)';
-            ctx.beginPath();ctx.arc(lx,yy,7+8*p,0,Math.PI*2);ctx.fill();
-            ctx.beginPath();ctx.arc(rx,yy,7+8*p,0,Math.PI*2);ctx.fill();
+        for(let i=0;i<13;i++){
+            const p=(i+1)/14;
+            const yy=topY+p*(groundY-topY);
+            const spread=.09+.41*p;
+            const lx=W*(.5-spread),rx=W*(.5+spread);
+            const lampH=14+35*p;
+            ctx.strokeStyle='rgba(34,211,238,.85)';ctx.lineWidth=Math.max(2,4*p);
+            ctx.beginPath();ctx.moveTo(lx,yy);ctx.lineTo(lx,yy-lampH);ctx.stroke();
+            ctx.beginPath();ctx.moveTo(rx,yy);ctx.lineTo(rx,yy-lampH);ctx.stroke();
+            ctx.fillStyle='rgba(34,211,238,.4)';
+            ctx.beginPath();ctx.arc(lx,yy-lampH,4+7*p,0,Math.PI*2);ctx.fill();
+            ctx.beginPath();ctx.arc(rx,yy-lampH,4+7*p,0,Math.PI*2);ctx.fill();
         }
 
-        // Motion streaks in foreground
-        ctx.globalAlpha=.28;ctx.strokeStyle='#cbd5e1';ctx.lineWidth=3;
-        const streakPhase=(distance*55)%120;
-        for(let i=0;i<24;i++){
-            const x=(i*79-streakPhase)%W;
-            const y=groundY+35+(i%7)*18;
-            ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+25+(i%4)*10,y);ctx.stroke();
+        // Foreground speed streaks make the track visibly move.
+        const streak=(distance*75)%110;
+        ctx.globalAlpha=.32;ctx.strokeStyle='#dbeafe';ctx.lineWidth=3;
+        for(let i=0;i<30;i++){
+            const x=(i*61-streak+W)%W;
+            const y=groundY+25+(i%8)*17;
+            ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+28+(i%5)*8,y);ctx.stroke();
         }
         ctx.globalAlpha=1;
     }
 
     function drawBoy(){
-        const x=boy.x,y=boy.y,t=runClock;
-        ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
-        const s=1.34;
+        const t=runClock;
+        const x=boy.x,y=boy.y;
+        ctx.save();
         ctx.translate(x,y);
-        ctx.scale(s,s);
+        const scale=1.62;
+        ctx.scale(scale,scale);
+        ctx.lineCap='round';ctx.lineJoin='round';
 
-        const bob=boy.onGround&&!boy.ducking?Math.sin(t*2)*1.4:0;
-        const swing=Math.sin(t)*16;
+        const bob=boy.onGround&&!boy.ducking?Math.sin(t*2.3)*2:0;
+        const stride=Math.sin(t)*22;
+        const armSwing=Math.sin(t+Math.PI)*18;
 
-        // Ground contact shadow
-        ctx.globalAlpha=.34;ctx.fillStyle='#020617';ctx.beginPath();
-        ctx.ellipse(35,100,36,9,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+        // Shadow under the runner.
+        ctx.globalAlpha=.35;ctx.fillStyle='#020617';
+        ctx.beginPath();ctx.ellipse(46,108,49,11,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
 
         if(boy.ducking){
-            ctx.fillStyle='#111827';ctx.beginPath();ctx.roundRect(18,38,55,17,8);ctx.fill();
-            ctx.fillStyle='#1d4ed8';ctx.beginPath();ctx.roundRect(16,20,44,29,10);ctx.fill();
-            ctx.fillStyle='#d9a27f';ctx.beginPath();ctx.ellipse(12,18,13,15,-.12,0,Math.PI*2);ctx.fill();
-            ctx.fillStyle='#111827';ctx.beginPath();ctx.arc(11,12,14,Math.PI,Math.PI*2);ctx.fill();
+            ctx.fillStyle='#0f172a';ctx.beginPath();ctx.roundRect(19,49,72,19,9);ctx.fill();
+            ctx.fillStyle='#2563eb';ctx.beginPath();ctx.roundRect(18,25,57,34,12);ctx.fill();
+            ctx.fillStyle='#d7a07b';ctx.beginPath();ctx.ellipse(13,22,16,18,-.12,0,Math.PI*2);ctx.fill();
+            ctx.fillStyle='#111318';ctx.beginPath();ctx.arc(13,14,17,Math.PI,Math.PI*2);ctx.fill();
             ctx.restore();return;
         }
 
-        // Legs — athletic running stride
-        const hipX=34,hipY=67+bob;
-        ctx.strokeStyle='#172033';ctx.lineWidth=14;
-        ctx.beginPath();ctx.moveTo(hipX,hipY);ctx.lineTo(27-swing*.5,81+bob);ctx.lineTo(18-swing,96+bob);ctx.stroke();
-        ctx.strokeStyle='#334155';ctx.lineWidth=9;
-        ctx.beginPath();ctx.moveTo(hipX+5,hipY);ctx.lineTo(43+swing*.5,81+bob);ctx.lineTo(51+swing,93+bob);ctx.stroke();
+        // Back leg and shoe.
+        ctx.strokeStyle='#172033';ctx.lineWidth=17;
+        ctx.beginPath();ctx.moveTo(48,73+bob);ctx.lineTo(36-stride*.52,91+bob);ctx.lineTo(22-stride,108+bob);ctx.stroke();
+        ctx.strokeStyle='#334155';ctx.lineWidth=11;
+        ctx.beginPath();ctx.moveTo(51,73+bob);ctx.lineTo(65+stride*.48,91+bob);ctx.lineTo(78+stride,104+bob);ctx.stroke();
 
-        // Modern running shoes
-        ctx.fillStyle='#f8fafc';ctx.beginPath();ctx.roundRect(8-swing,93+bob,25,8,4);ctx.fill();
-        ctx.fillStyle='#22d3ee';ctx.fillRect(19-swing,94+bob,11,3);
-        ctx.fillStyle='#f8fafc';ctx.beginPath();ctx.roundRect(45+swing,90+bob,27,8,4);ctx.fill();
-        ctx.fillStyle='#60a5fa';ctx.fillRect(54+swing,91+bob,11,3);
+        // Shoes.
+        ctx.fillStyle='#f8fafc';ctx.beginPath();ctx.roundRect(10-stride,104+bob,32,10,5);ctx.fill();
+        ctx.fillStyle='#22d3ee';ctx.fillRect(24-stride,105+bob,14,4);
+        ctx.fillStyle='#f8fafc';ctx.beginPath();ctx.roundRect(71+stride,100+bob,36,10,5);ctx.fill();
+        ctx.fillStyle='#60a5fa';ctx.fillRect(84+stride,101+bob,15,4);
 
-        // Shorts + fitted athletic jacket
-        ctx.fillStyle='#0f172a';ctx.beginPath();ctx.roundRect(18,56+bob,34,20,7);ctx.fill();
-        const shirt=ctx.createLinearGradient(15,30,53,70);
-        shirt.addColorStop(0,'#0ea5e9');shirt.addColorStop(.45,'#2563eb');shirt.addColorStop(1,'#0f172a');
-        ctx.fillStyle=shirt;ctx.beginPath();ctx.roundRect(15,30+bob,40,42,12);ctx.fill();
-        ctx.strokeStyle='rgba(255,255,255,.3)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(35,33+bob);ctx.lineTo(35,68+bob);ctx.stroke();
-        ctx.fillStyle='#fff';ctx.font='900 6px Arial';ctx.textAlign='center';ctx.fillText('SP',35,55+bob);
+        // Shorts and fitted running jacket.
+        ctx.fillStyle='#0b1220';ctx.beginPath();ctx.roundRect(24,62+bob,47,25,8);ctx.fill();
+        const jacket=ctx.createLinearGradient(20,34,70,82);
+        jacket.addColorStop(0,'#38bdf8');jacket.addColorStop(.42,'#2563eb');jacket.addColorStop(1,'#0f172a');
+        ctx.fillStyle=jacket;ctx.beginPath();ctx.roundRect(20,34+bob,53,50,15);ctx.fill();
+        ctx.strokeStyle='rgba(255,255,255,.34)';ctx.lineWidth=2;
+        ctx.beginPath();ctx.moveTo(46,38+bob);ctx.lineTo(46,79+bob);ctx.stroke();
+        ctx.fillStyle='#fff';ctx.font='900 8px Arial';ctx.textAlign='center';ctx.fillText('SP',47,65+bob);
 
-        // Arms
-        ctx.strokeStyle='#d49a76';ctx.lineWidth=9;
-        ctx.beginPath();ctx.moveTo(19,39+bob);ctx.lineTo(8-swing*.42,53+bob);ctx.lineTo(4-swing*.65,66+bob);ctx.stroke();
-        ctx.beginPath();ctx.moveTo(50,39+bob);ctx.lineTo(62+swing*.42,52+bob);ctx.lineTo(68+swing*.65,60+bob);ctx.stroke();
-        ctx.fillStyle='#d9a27f';ctx.beginPath();ctx.arc(4-swing*.65,66+bob,4.5,0,Math.PI*2);ctx.fill();
-        ctx.beginPath();ctx.arc(68+swing*.65,60+bob,4.5,0,Math.PI*2);ctx.fill();
+        // Dynamic arms.
+        ctx.strokeStyle='#d49a76';ctx.lineWidth=11;
+        ctx.beginPath();ctx.moveTo(24,45+bob);ctx.lineTo(8-armSwing*.35,60+bob);ctx.lineTo(3-armSwing*.6,75+bob);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(69,45+bob);ctx.lineTo(82+armSwing*.35,59+bob);ctx.lineTo(91+armSwing*.6,70+bob);ctx.stroke();
+        ctx.fillStyle='#d9a27f';
+        ctx.beginPath();ctx.arc(3-armSwing*.6,75+bob,5.5,0,Math.PI*2);ctx.fill();
+        ctx.beginPath();ctx.arc(91+armSwing*.6,70+bob,5.5,0,Math.PI*2);ctx.fill();
 
-        // Neck and shaded face
-        ctx.fillStyle='#c98e6b';ctx.fillRect(27,24+bob,11,12);
-        const skin=ctx.createRadialGradient(36,12,2,30,19,22);
-        skin.addColorStop(0,'#f5c8a6');skin.addColorStop(.55,'#d9a17d');skin.addColorStop(1,'#8f5745');
-        ctx.fillStyle=skin;ctx.beginPath();ctx.ellipse(31,18+bob,16,19,-.08,0,Math.PI*2);ctx.fill();
+        // Neck.
+        ctx.fillStyle='#c88c69';ctx.fillRect(37,27+bob,16,15);
 
-        // Hair / face detail
-        ctx.fillStyle='#111318';ctx.beginPath();
-        ctx.moveTo(15,13+bob);ctx.quadraticCurveTo(14,-6+bob,31,1+bob);
-        ctx.quadraticCurveTo(45,-6+bob,50,11+bob);ctx.quadraticCurveTo(40,5+bob,34,10+bob);
-        ctx.quadraticCurveTo(26,4+bob,20,13+bob);ctx.closePath();ctx.fill();
-        ctx.fillStyle='#2b211c';ctx.beginPath();ctx.arc(39,18+bob,2,0,Math.PI*2);ctx.fill();
-        ctx.strokeStyle='#7f4634';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(37,28+bob);ctx.quadraticCurveTo(41,30+bob,45,27+bob);ctx.stroke();
+        // Head with skin shading.
+        const skin=ctx.createRadialGradient(48,13,2,40,23,28);
+        skin.addColorStop(0,'#f8d0ad');skin.addColorStop(.5,'#dca27c');skin.addColorStop(1,'#8d5543');
+        ctx.fillStyle=skin;ctx.beginPath();ctx.ellipse(43,21+bob,21,24,-.08,0,Math.PI*2);ctx.fill();
+
+        // Hair and facial details.
+        ctx.fillStyle='#101216';ctx.beginPath();
+        ctx.moveTo(23,16+bob);ctx.quadraticCurveTo(22,-10+bob,43,0+bob);
+        ctx.quadraticCurveTo(65,-8+bob,70,14+bob);
+        ctx.quadraticCurveTo(57,8+bob,49,14+bob);
+        ctx.quadraticCurveTo(39,7+bob,30,18+bob);ctx.closePath();ctx.fill();
+
+        ctx.fillStyle='#111';ctx.beginPath();ctx.arc(50,22+bob,2.4,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle='#6f3f30';ctx.lineWidth=1.5;
+        ctx.beginPath();ctx.moveTo(49,34+bob);ctx.quadraticCurveTo(54,37+bob,59,33+bob);ctx.stroke();
 
         ctx.restore();
     }
