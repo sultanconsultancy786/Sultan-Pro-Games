@@ -999,9 +999,9 @@ const Pages = {
                     <div class="relative" style="aspect-ratio: 16/8.4; min-height:420px;">
                         <canvas id="trex-canvas" width="1280" height="672" class="w-full h-full block touch-manipulation"></canvas>
                         <div id="trex-overlay" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/70 backdrop-blur-sm text-center p-6 z-20">
-                            <div class="w-20 h-20 rounded-full bg-sky-500/15 border border-sky-400/30 flex items-center justify-center mb-4 text-4xl">🏃</div>
-                            <h2 id="trex-title" class="text-3xl md:text-4xl font-black text-white mb-2">Run on the Real Road</h2>
-                            <p id="trex-subtitle" class="text-gray-300 mb-6">Run through a realistic night road and running track. ↑ jump · ↓ / S duck · SPACE fire.</p>
+                            <div class="w-20 h-20 rounded-full bg-sky-500/15 border border-sky-400/30 flex items-center justify-center mb-4 text-4xl">RUN</div>
+                            <h2 id="trex-title" class="text-3xl md:text-4xl font-black text-white mb-2">REAL ROAD RUN</h2>
+                            <p id="trex-subtitle" class="text-gray-300 mb-6">Run through a realistic night road. ↑ Jump · ↓ / S Duck · SPACE Fire.</p>
                             <button id="trex-start" class="px-10 py-3 bg-primary text-white rounded-xl font-black hover:bg-blue-600 transition-colors active:scale-95">Start Game</button>
                         </div>
                     </div>
@@ -2071,72 +2071,89 @@ function initTrexGame() {
     }
 
     function drawBoy(){
-        const x=boy.x,y=boy.y, t=runClock;
+        const x=boy.x,y=boy.y,t=runClock;
         ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
 
-        // Soft contact shadow
-        ctx.globalAlpha=.28;ctx.fillStyle='#000';ctx.beginPath();
-        ctx.ellipse(x+35,groundY+5,34,9,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+        // Ground shadow
+        ctx.globalAlpha=.32;ctx.fillStyle='#000';ctx.beginPath();
+        ctx.ellipse(x+35,groundY+5,36,9,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
 
-        const bob=boy.onGround&&!boy.ducking?Math.sin(t*2)*1.8:0;
+        const bob=boy.onGround&&!boy.ducking?Math.sin(t*2)*1.5:0;
         const swing=Math.sin(t)*18;
         const yy=y+bob;
 
+        // Human runner — proportional head, neck, torso, arms and legs.
         if(boy.ducking){
-            ctx.fillStyle='#111827';ctx.fillRect(x+20,yy+30,52,22);
-            ctx.fillStyle='#2563eb';ctx.beginPath();ctx.roundRect(x+22,yy+16,45,34,12);ctx.fill();
-            ctx.fillStyle='#d9a27f';ctx.beginPath();ctx.arc(x+15,yy+16,15,0,Math.PI*2);ctx.fill();
-            ctx.fillStyle='#171717';ctx.beginPath();ctx.arc(x+11,yy+10,15,Math.PI,Math.PI*2);ctx.fill();
-            ctx.strokeStyle='#d9a27f';ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(x+55,yy+25);ctx.lineTo(x+78,yy+35);ctx.stroke();
-            ctx.strokeStyle='#111827';ctx.lineWidth=12;ctx.beginPath();ctx.moveTo(x+34,yy+45);ctx.lineTo(x+72,yy+49);ctx.stroke();
-            ctx.strokeStyle='#f8fafc';ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(x+66,yy+49);ctx.lineTo(x+84,yy+49);ctx.stroke();
+            ctx.fillStyle='#111827';ctx.beginPath();ctx.roundRect(x+22,yy+32,54,18,8);ctx.fill();
+            ctx.fillStyle='#2563eb';ctx.beginPath();ctx.roundRect(x+21,yy+15,43,32,11);ctx.fill();
+            ctx.fillStyle='#d9a27f';ctx.beginPath();ctx.ellipse(x+14,yy+15,14,16,-.12,0,Math.PI*2);ctx.fill();
+            ctx.fillStyle='#171717';ctx.beginPath();ctx.arc(x+13,yy+9,15,Math.PI,Math.PI*2);ctx.fill();
+            ctx.strokeStyle='#d49a76';ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(x+53,yy+24);ctx.lineTo(x+76,yy+34);ctx.stroke();
+            ctx.strokeStyle='#111827';ctx.lineWidth=12;ctx.beginPath();ctx.moveTo(x+36,yy+44);ctx.lineTo(x+74,yy+48);ctx.stroke();
+            ctx.strokeStyle='#f8fafc';ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(x+68,yy+48);ctx.lineTo(x+84,yy+48);ctx.stroke();
             ctx.restore();return;
         }
 
-        // Legs: realistic running form
-        const hipX=x+33, hipY=yy+65;
+        const hipX=x+34,hipY=yy+67;
+
+        // Shoes + legs
         ctx.strokeStyle='#111827';ctx.lineWidth=14;
-        ctx.beginPath();ctx.moveTo(hipX,hipY);ctx.lineTo(x+27-swing*.55,yy+80);ctx.lineTo(x+19-swing,yy+94);ctx.stroke();
-        ctx.strokeStyle='#e5e7eb';ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(x+15-swing,yy+95);ctx.lineTo(x+31-swing,yy+95);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(hipX,hipY);ctx.lineTo(x+27-swing*.55,yy+81);ctx.lineTo(x+18-swing,yy+95);ctx.stroke();
+        ctx.strokeStyle='#f8fafc';ctx.lineWidth=8;
+        ctx.beginPath();ctx.moveTo(x+15-swing,yy+96);ctx.lineTo(x+31-swing,yy+96);ctx.stroke();
+
         ctx.strokeStyle='#0f172a';ctx.lineWidth=14;
-        ctx.beginPath();ctx.moveTo(hipX+5,hipY);ctx.lineTo(x+43+swing*.55,yy+79);ctx.lineTo(x+51+swing,yy+91);ctx.stroke();
-        ctx.strokeStyle='#60a5fa';ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(x+47+swing,yy+92);ctx.lineTo(x+64+swing,yy+92);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(hipX+5,hipY);ctx.lineTo(x+43+swing*.55,yy+80);ctx.lineTo(x+51+swing,yy+92);ctx.stroke();
+        ctx.strokeStyle='#60a5fa';ctx.lineWidth=8;
+        ctx.beginPath();ctx.moveTo(x+47+swing,yy+93);ctx.lineTo(x+64+swing,yy+93);ctx.stroke();
 
-        // Athletic shorts + shirt
-        ctx.fillStyle='#0f172a';ctx.beginPath();ctx.roundRect(x+19,yy+58,30,19,7);ctx.fill();
-        const shirt=ctx.createLinearGradient(x+17,yy+28,x+52,yy+70);shirt.addColorStop(0,'#38bdf8');shirt.addColorStop(.55,'#2563eb');shirt.addColorStop(1,'#123b8a');
-        ctx.fillStyle=shirt;ctx.beginPath();ctx.roundRect(x+16,yy+31,37,40,12);ctx.fill();
-        ctx.fillStyle='rgba(255,255,255,.18)';ctx.fillRect(x+21,yy+35,4,31);
+        // Shorts and athletic shirt
+        ctx.fillStyle='#111827';ctx.beginPath();ctx.roundRect(x+19,yy+57,31,20,7);ctx.fill();
+        const shirt=ctx.createLinearGradient(x+16,yy+30,x+53,yy+70);
+        shirt.addColorStop(0,'#60a5fa');shirt.addColorStop(.45,'#2563eb');shirt.addColorStop(1,'#0f3b82');
+        ctx.fillStyle=shirt;ctx.beginPath();ctx.roundRect(x+16,yy+31,38,40,12);ctx.fill();
+        ctx.fillStyle='rgba(255,255,255,.2)';ctx.fillRect(x+21,yy+36,4,29);
 
-        // Arms
-        ctx.strokeStyle='#d49a76';ctx.lineWidth=9;
-        ctx.beginPath();ctx.moveTo(x+19,yy+40);ctx.lineTo(x+7-swing*.45,yy+54);ctx.lineTo(x+4-swing*.65,yy+66);ctx.stroke();
-        ctx.beginPath();ctx.moveTo(x+48,yy+40);ctx.lineTo(x+60+swing*.4,yy+53);ctx.lineTo(x+66+swing*.65,yy+60);ctx.stroke();
+        // Natural arm swing
+        ctx.strokeStyle='#d39a76';ctx.lineWidth=9;
+        ctx.beginPath();ctx.moveTo(x+19,yy+40);ctx.lineTo(x+8-swing*.45,yy+54);ctx.lineTo(x+4-swing*.65,yy+67);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(x+49,yy+40);ctx.lineTo(x+61+swing*.4,yy+53);ctx.lineTo(x+67+swing*.65,yy+61);ctx.stroke();
+        ctx.fillStyle='#d9a27f';
+        ctx.beginPath();ctx.arc(x+4-swing*.65,yy+67,4.5,0,Math.PI*2);ctx.fill();
+        ctx.beginPath();ctx.arc(x+67+swing*.65,yy+61,4.5,0,Math.PI*2);ctx.fill();
 
-        // Neck + head
-        ctx.fillStyle='#c98c68';ctx.fillRect(x+27,yy+25,10,10);
-        const skin=ctx.createRadialGradient(x+35,yy+14,3,x+30,yy+20,20);
-        skin.addColorStop(0,'#f3c8a5');skin.addColorStop(.7,'#d79a74');skin.addColorStop(1,'#a8664c');
-        ctx.fillStyle=skin;ctx.beginPath();ctx.ellipse(x+31,yy+18,15,18,-.08,0,Math.PI*2);ctx.fill();
+        // Neck
+        const neck=ctx.createLinearGradient(x+27,yy+25,x+38,yy+36);
+        neck.addColorStop(0,'#f0bd98');neck.addColorStop(1,'#b97859');
+        ctx.fillStyle=neck;ctx.fillRect(x+27,yy+25,10,11);
+
+        // More realistic head / skin shading
+        const skin=ctx.createRadialGradient(x+36,yy+12,2,x+30,yy+20,21);
+        skin.addColorStop(0,'#f6cfad');skin.addColorStop(.55,'#dba27d');skin.addColorStop(1,'#9b5f48');
+        ctx.fillStyle=skin;ctx.beginPath();ctx.ellipse(x+31,yy+18,15.5,18.5,-.08,0,Math.PI*2);ctx.fill();
 
         // Ear
-        ctx.fillStyle='#d79a74';ctx.beginPath();ctx.arc(x+17,yy+20,4.5,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle='#d79a74';ctx.beginPath();ctx.arc(x+17,yy+20,4.7,0,Math.PI*2);ctx.fill();
 
-        // Hair
-        ctx.fillStyle='#111827';ctx.beginPath();
-        ctx.moveTo(x+16,yy+14);ctx.quadraticCurveTo(x+16,yy-6,x+32,yy+1);
-        ctx.quadraticCurveTo(x+47,yy-4,x+49,yy+10);
-        ctx.quadraticCurveTo(x+42,yy+6,x+37,yy+11);
-        ctx.quadraticCurveTo(x+28,yy+5,x+22,yy+12);
-        ctx.closePath();ctx.fill();
+        // Hair with individual strands
+        const hair=ctx.createLinearGradient(x+15,yy,x+49,yy+15);
+        hair.addColorStop(0,'#090b10');hair.addColorStop(.55,'#24272b');hair.addColorStop(1,'#050609');
+        ctx.fillStyle=hair;ctx.beginPath();
+        ctx.moveTo(x+15,yy+14);ctx.quadraticCurveTo(x+14,yy-7,x+30,yy+1);
+        ctx.quadraticCurveTo(x+45,yy-5,x+50,yy+10);ctx.quadraticCurveTo(x+42,yy+6,x+37,yy+11);
+        ctx.quadraticCurveTo(x+29,yy+5,x+22,yy+12);ctx.closePath();ctx.fill();
 
-        // Face details
-        ctx.fillStyle='#111';ctx.beginPath();ctx.arc(x+37,yy+18,1.8,0,Math.PI*2);ctx.fill();
-        ctx.strokeStyle='#5b3928';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x+33,yy+14);ctx.lineTo(x+40,yy+13);ctx.stroke();
+        ctx.strokeStyle='rgba(255,255,255,.16)';ctx.lineWidth=1.3;
+        for(let i=0;i<5;i++){ctx.beginPath();ctx.moveTo(x+20+i*5,yy+6);ctx.lineTo(x+24+i*4,yy+1+(i%2)*2);ctx.stroke();}
+
+        // Eyes, brows, nose and mouth
+        ctx.strokeStyle='#4b3024';ctx.lineWidth=1.5;
+        ctx.beginPath();ctx.moveTo(x+32,yy+13);ctx.lineTo(x+39,yy+12);ctx.stroke();
+        ctx.fillStyle='#111';ctx.beginPath();ctx.arc(x+38,yy+18,1.8,0,Math.PI*2);ctx.fill();
         ctx.strokeStyle='#9b6248';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(x+42,yy+19);ctx.lineTo(x+43,yy+24);ctx.stroke();
         ctx.strokeStyle='#7f4634';ctx.beginPath();ctx.moveTo(x+37,yy+28);ctx.quadraticCurveTo(x+41,yy+30,x+45,yy+27);ctx.stroke();
 
-        // Shirt logo
+        // Shirt branding
         ctx.fillStyle='#fff';ctx.font='900 8px Arial';ctx.textAlign='center';ctx.fillText('SP',x+35,yy+55);
 
         ctx.restore();
