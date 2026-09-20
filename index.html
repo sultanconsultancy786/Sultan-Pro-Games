@@ -2236,7 +2236,8 @@ function initTrexGame() {
         });
         bullets.forEach(b=>{ctx.save();ctx.shadowBlur=20;ctx.shadowColor='#fb923c';ctx.fillStyle='#fde047';ctx.fillRect(b.x,b.y,b.w,b.h);ctx.fillStyle='#f97316';ctx.fillRect(b.x-10,b.y+1,14,b.h-2);ctx.restore();});
         blasts.forEach(b=>{ctx.save();ctx.globalAlpha=Math.max(0,b.t/.28);ctx.strokeStyle='#fb923c';ctx.lineWidth=8;ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.stroke();ctx.restore();});
-        // Render the animated runner in the foreground so the boy, road and obstacles stay visible together.\n        drawBoy();
+        // Render the animated runner in the foreground so the boy, road and obstacles stay visible together.
+        drawBoy();
     }
 
     function loop(now){
