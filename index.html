@@ -1000,8 +1000,8 @@ const Pages = {
                         <canvas id="trex-canvas" width="1280" height="672" class="w-full h-full block touch-manipulation"></canvas>
                         <div id="trex-overlay" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/70 backdrop-blur-sm text-center p-6 z-20">
                             <div class="w-20 h-20 rounded-full bg-sky-500/15 border border-sky-400/30 flex items-center justify-center mb-4 text-4xl">RUN</div>
-                            <h2 id="trex-title" class="text-3xl md:text-4xl font-black text-white mb-2">REAL ROAD RUN</h2>
-                            <p id="trex-subtitle" class="text-gray-300 mb-6">Run through a realistic night road. ↑ Jump · ↓ / S Duck · SPACE Fire.</p>
+                            <h2 id="trex-title" class="text-3xl md:text-4xl font-black text-white mb-2">REALISTIC HUMAN RUN</h2>
+                            <p id="trex-subtitle" class="text-gray-300 mb-6">Realistic human runner · ↑ Jump · ↓ / S Duck · SPACE Fire.</p>
                             <button id="trex-start" class="px-10 py-3 bg-primary text-white rounded-xl font-black hover:bg-blue-600 transition-colors active:scale-95">Start Game</button>
                         </div>
                     </div>
@@ -1981,93 +1981,34 @@ function initTrexGame() {
     }
 
     function drawBackground(){
-        // REALISTIC NIGHT ROAD / RUNNING TRACK
+        // Realistic runner scene: use the repository's existing Boy Runner artwork.
+        if(!window.realRunnerScene){
+            window.realRunnerScene=new Image();
+            window.realRunnerScene.src='boy_runner_3d.jpg';
+        }
+        if(window.realRunnerScene.complete && window.realRunnerScene.naturalWidth){
+            const iw=window.realRunnerScene.naturalWidth, ih=window.realRunnerScene.naturalHeight;
+            const scale=Math.max(W/iw,H/ih);
+            const dw=iw*scale, dh=ih*scale;
+            ctx.drawImage(window.realRunnerScene,(W-dw)*.5,(H-dh)*.5,dw,dh);
+            const shade=ctx.createLinearGradient(0,0,0,H);
+            shade.addColorStop(0,'rgba(2,8,23,.04)');
+            shade.addColorStop(.6,'rgba(2,8,23,.03)');
+            shade.addColorStop(1,'rgba(2,8,23,.28)');
+            ctx.fillStyle=shade;ctx.fillRect(0,0,W,H);
+            ctx.globalAlpha=.14;ctx.strokeStyle='#fff';ctx.lineWidth=3;
+            const phase=(distance*7)%130;
+            for(let i=-1;i<18;i++){
+                const x=i*100-phase,y=groundY+38+(i%4)*18;
+                ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+55,y);ctx.stroke();
+            }
+            ctx.globalAlpha=1;
+            return;
+        }
         const sky=ctx.createLinearGradient(0,0,0,H);
-        sky.addColorStop(0,'#020617'); sky.addColorStop(.35,'#0b2740');
-        sky.addColorStop(.68,'#31556b'); sky.addColorStop(1,'#8b5e3c');
-        ctx.fillStyle=sky; ctx.fillRect(0,0,W,H);
-
-        // Moon + atmospheric glow
-        ctx.save();
-        const glow=ctx.createRadialGradient(250,145,5,250,145,120);
-        glow.addColorStop(0,'rgba(255,248,220,.35)'); glow.addColorStop(1,'rgba(255,248,220,0)');
-        ctx.fillStyle=glow; ctx.fillRect(120,15,260,260);
-        ctx.fillStyle='#fff7d6'; ctx.beginPath(); ctx.arc(250,145,36,0,Math.PI*2); ctx.fill();
-        ctx.restore();
-
-        // Stars
-        stars.forEach(s=>{ctx.globalAlpha=s.a;ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill()});
-        ctx.globalAlpha=1;
-
-        // Distant mountains
-        ctx.fillStyle='#1b3347';
-        ctx.beginPath(); ctx.moveTo(0,420);
-        ctx.lineTo(120,320);ctx.lineTo(215,390);ctx.lineTo(330,285);ctx.lineTo(455,395);
-        ctx.lineTo(610,300);ctx.lineTo(760,390);ctx.lineTo(910,270);ctx.lineTo(1080,395);
-        ctx.lineTo(1190,315);ctx.lineTo(W,385);ctx.lineTo(W,500);ctx.lineTo(0,500);ctx.closePath();ctx.fill();
-
-        // Mountain highlights
-        ctx.strokeStyle='rgba(148,197,222,.22)';ctx.lineWidth=5;
-        [[330,285,455,395],[610,300,760,390],[910,270,1080,395]].forEach(a=>{ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(a[2],a[3]);ctx.stroke()});
-
-        // Roadside grass
-        ctx.fillStyle='#163522';ctx.fillRect(0,groundY-35,W,35);
-        ctx.fillStyle='#204a2c';ctx.fillRect(0,groundY-10,W,10);
-
-        // Wide asphalt running road
-        const road=ctx.createLinearGradient(0,groundY,0,H);
-        road.addColorStop(0,'#343b42');road.addColorStop(.55,'#1e252b');road.addColorStop(1,'#10151a');
-        ctx.fillStyle=road;ctx.fillRect(0,groundY,W,H-groundY);
-
-        // Road shoulder
-        ctx.fillStyle='#d1a45b';ctx.fillRect(0,groundY-3,W,5);
-        ctx.fillStyle='#111827';ctx.fillRect(0,groundY+2,W,6);
-
-        // Perspective lane markings
-        const phase=(distance*5)%90;
-        for(let i=-2;i<18;i++){
-            const x=i*110-phase;
-            const y=groundY+35;
-            const len=42+Math.min(80,(y-groundY)*.7);
-            ctx.fillStyle='rgba(255,255,255,.82)';
-            ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+len,y);ctx.lineTo(x+len+10,y+7);ctx.lineTo(x+10,y+7);ctx.closePath();ctx.fill();
-        }
-
-        // Running-track style edge lines
-        ctx.strokeStyle='#f8fafc';ctx.lineWidth=4;
-        ctx.beginPath();ctx.moveTo(0,groundY+13);ctx.lineTo(W,groundY+13);ctx.stroke();
-
-        // Roadside lights / poles
-        const poleOffset=(distance*1.7)%190;
-        for(let x=-190+poleOffset;x<W+190;x+=190){
-            const baseY=groundY-8;
-            ctx.strokeStyle='#263746';ctx.lineWidth=7;
-            ctx.beginPath();ctx.moveTo(x,baseY);ctx.lineTo(x,baseY-150);ctx.stroke();
-            ctx.strokeStyle='#475569';ctx.lineWidth=3;
-            ctx.beginPath();ctx.moveTo(x,baseY-150);ctx.lineTo(x+28,baseY-150);ctx.stroke();
-            const lg=ctx.createRadialGradient(x+30,baseY-150,2,x+30,baseY-150,55);
-            lg.addColorStop(0,'rgba(255,238,170,.55)');lg.addColorStop(1,'rgba(255,238,170,0)');
-            ctx.fillStyle=lg;ctx.fillRect(x-25,baseY-205,110,110);
-            ctx.fillStyle='#fff1b2';ctx.beginPath();ctx.arc(x+30,baseY-150,5,0,Math.PI*2);ctx.fill();
-        }
-
-        // Trees along the roadside
-        const treeOffset=(distance*1.05)%145;
-        for(let x=-145+treeOffset;x<W+145;x+=145){
-            const h=55+((Math.sin(x*0.07)+1)*.5)*35;
-            const by=groundY-20;
-            ctx.fillStyle='#3a261b';ctx.fillRect(x-5,by-h*.55,10,h*.55);
-            const tg=ctx.createRadialGradient(x,by-h,5,x,by-h,40);
-            tg.addColorStop(0,'#4ade80');tg.addColorStop(.45,'#166534');tg.addColorStop(1,'#052e16');
-            ctx.fillStyle=tg;ctx.beginPath();ctx.arc(x,by-h,38,0,Math.PI*2);ctx.fill();
-            ctx.beginPath();ctx.arc(x-22,by-h+16,25,0,Math.PI*2);ctx.fill();
-            ctx.beginPath();ctx.arc(x+22,by-h+18,24,0,Math.PI*2);ctx.fill();
-        }
-
-        // Speed streaks for motion
-        ctx.globalAlpha=.18;ctx.strokeStyle='#cbd5e1';ctx.lineWidth=2;
-        for(let i=0;i<18;i++){const yy=groundY+18+i*13;const xx=(i*83-(distance*9)%1200);ctx.beginPath();ctx.moveTo(xx,yy);ctx.lineTo(xx+35+i*2,yy);ctx.stroke();}
-        ctx.globalAlpha=1;
+        sky.addColorStop(0,'#020617');sky.addColorStop(.5,'#0b2740');sky.addColorStop(1,'#111827');
+        ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+        ctx.fillStyle='#202b36';ctx.fillRect(0,groundY,W,H-groundY);
     }
 
     function drawBoy(){
@@ -2262,7 +2203,7 @@ function initTrexGame() {
         });
         bullets.forEach(b=>{ctx.save();ctx.shadowBlur=20;ctx.shadowColor='#fb923c';ctx.fillStyle='#fde047';ctx.fillRect(b.x,b.y,b.w,b.h);ctx.fillStyle='#f97316';ctx.fillRect(b.x-10,b.y+1,14,b.h-2);ctx.restore();});
         blasts.forEach(b=>{ctx.save();ctx.globalAlpha=Math.max(0,b.t/.28);ctx.strokeStyle='#fb923c';ctx.lineWidth=8;ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.stroke();ctx.restore();});
-        drawBoy();
+        // Human runner is rendered by the realistic repository artwork; no cartoon/procedural boy.
     }
 
     function loop(now){
