@@ -204,7 +204,6 @@ const mockData = {
     games: [
         { id: "g-snake", title: "Snake Premium", image: "https://images.unsplash.com/photo-1552820728-8b83bb6b773f?auto=format&fit=crop&q=80&w=800", entryFee: 0, playersOnline: 1542, difficulty: "Medium", type: "arcade", route: "#snake" },
         { id: "g-trex", title: "Boy Runner", image: "https://images.unsplash.com/photo-1560961911-ba7ef651a56c?auto=format&fit=crop&q=80&w=800", entryFee: 0, playersOnline: 1, difficulty: "Medium", type: "arcade", route: "#trex" },
-        { id: "g-snakes-ladders", title: "Snakes & Ladders", image: "https://images.unsplash.com/photo-1606503153255-59d8b8b8497e?auto=format&fit=crop&q=80&w=800", entryFee: 0, playersOnline: 2, difficulty: "Easy", type: "board", route: "#snakes-ladders" },
         { id: "g-ludo3d", title: "Ludo 3D", image: "https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?auto=format&fit=crop&q=80&w=800", entryFee: 0, playersOnline: 4, difficulty: "Easy", type: "board", route: "#ludo-3d" },
         { id: "g-checkers3d", title: "Checkers 3D", image: "https://images.unsplash.com/photo-1611195974226-a6a9be9dd763?auto=format&fit=crop&q=80&w=800", entryFee: 0, playersOnline: 2, difficulty: "Medium", type: "board", route: "#checkers-3d" },
         { id: "g5", title: "Chess Masters", image: "https://images.unsplash.com/photo-1529699211952-734e80c4d42b?auto=format&fit=crop&q=80&w=800", entryFee: 1, playersOnline: 890, difficulty: "Hard", route: "#chess" },
@@ -212,7 +211,6 @@ const mockData = {
     tournaments: [
         { id: "t-snake", game: "Snake Premium", entryFee: 10, prizePool: 500, joined: 8, slots: 8, endsIn: "Live", route: "#tournament-snake" },
         { id: "t-trex", game: "Boy Runner", entryFee: 0, prizePool: 250, joined: 8, slots: 8, endsIn: "Live", route: "#tournament-trex" },
-        { id: "t-sl", game: "Snakes & Ladders", entryFee: 0, prizePool: 200, joined: 8, slots: 8, endsIn: "Live", route: "#tournament-snakes-ladders" },
         { id: "t-ludo", game: "Ludo 3D", entryFee: 0, prizePool: 300, joined: 8, slots: 8, endsIn: "Live", route: "#tournament-ludo-3d" },
         { id: "t-checkers", game: "Checkers 3D", entryFee: 0, prizePool: 300, joined: 8, slots: 8, endsIn: "Live", route: "#tournament-checkers-3d" },
         { id: "t-chess", game: "Chess Masters", entryFee: 25, prizePool: 1000, joined: 8, slots: 8, endsIn: "Live", route: "#tournament-chess" },
@@ -432,7 +430,6 @@ const Components = {
                     <a href="${({
                         'g-snake':'#tournament-snake',
                         'g-trex':'#tournament-trex',
-                        'g-snakes-ladders':'#tournament-snakes-ladders',
                         'g-ludo3d':'#tournament-ludo-3d',
                         'g-checkers3d':'#tournament-checkers-3d',
                         'g5':'#tournament-chess'
@@ -1042,90 +1039,6 @@ const Pages = {
         `;
     },
 
-
-    'snakes-ladders': () => {
-        setTimeout(() => { initSnakesLadders(); }, 80);
-        return `
-            <div class="animate-fade-in max-w-7xl mx-auto w-full">
-                <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4 mb-6">
-                    <div>
-                        <a href="#games" class="text-sm text-gray-400 hover:text-white transition-colors">← Back to Games</a>
-                        <div class="flex flex-wrap items-center gap-3 mt-2">
-                            <h1 class="text-3xl md:text-4xl font-black text-white">Snakes & Ladders</h1>
-                            <span class="px-3 py-1 rounded-full text-sm font-bold text-green-300 bg-green-950/50 border border-green-700/40">1–100 Board</span>
-                        </div>
-                        <p class="text-gray-400 mt-2">Roll the dice, climb ladders, avoid snakes, and be the first player to reach square 100.</p>
-                    </div>
-                    <div class="flex gap-3 flex-wrap">
-                        <div class="glass rounded-2xl px-5 py-3">
-                            <p class="text-xs text-gray-500 uppercase font-bold tracking-wider">You</p>
-                            <p id="sl-player-pos" class="text-xl font-black text-sky-400">Square 1</p>
-                        </div>
-                        <div class="glass rounded-2xl px-5 py-3">
-                            <p class="text-xs text-gray-500 uppercase font-bold tracking-wider">CPU</p>
-                            <p id="sl-cpu-pos" class="text-xl font-black text-pink-400">Square 1</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_320px] gap-6 items-start">
-                    <section class="glass rounded-3xl p-3 md:p-5 border border-border/50">
-                        <div class="relative mx-auto w-full max-w-[760px]" style="aspect-ratio:1;">
-                            <canvas id="sl-canvas" width="900" height="900" class="w-full h-full block rounded-2xl shadow-2xl bg-white touch-manipulation"></canvas>
-                            <div id="sl-win-overlay" class="hidden absolute inset-0 rounded-2xl bg-slate-950/85 backdrop-blur-sm z-20 flex flex-col items-center justify-center text-center p-6">
-                                <div class="text-6xl mb-4">🏆</div>
-                                <h2 id="sl-win-title" class="text-4xl font-black text-white mb-2">You Win!</h2>
-                                <p id="sl-win-sub" class="text-gray-300 mb-6">You reached square 100.</p>
-                                <button id="sl-play-again" class="px-8 py-3 rounded-xl bg-primary text-white font-black hover:bg-blue-600">Play Again</button>
-                            </div>
-                        </div>
-                    </section>
-
-                    <aside class="space-y-4">
-                        <div class="glass rounded-3xl p-5 border border-border/50">
-                            <div class="flex items-center justify-between mb-4">
-                                <div>
-                                    <p class="text-xs text-gray-500 uppercase tracking-widest font-bold">Current Turn</p>
-                                    <h2 id="sl-turn" class="text-2xl font-black text-sky-400">Your Turn</h2>
-                                </div>
-                                <button id="sl-sound" class="w-11 h-11 rounded-xl border border-border bg-background/60 flex items-center justify-center text-xl">🔊</button>
-                            </div>
-
-                            <div class="rounded-2xl p-5 text-center mb-4" style="background:linear-gradient(145deg,#f8fafc,#dbeafe);">
-                                <p class="text-xs text-slate-500 uppercase tracking-widest font-bold mb-2">Dice</p>
-                                <div id="sl-dice" class="text-7xl leading-none select-none">⚄</div>
-                                <p id="sl-roll-text" class="text-slate-600 text-sm font-semibold mt-3">Roll to start</p>
-                            </div>
-
-                            <button id="sl-roll" class="w-full py-4 rounded-2xl bg-primary text-white text-lg font-black hover:bg-blue-600 active:scale-[.98] transition-all shadow-lg shadow-primary/25">
-                                🎲 Roll Dice
-                            </button>
-                            <button id="sl-reset" class="w-full py-3 rounded-xl mt-3 border border-border text-gray-300 font-bold hover:bg-white/5">Restart Game</button>
-                        </div>
-
-                        <div class="glass rounded-3xl p-5 border border-border/50">
-                            <h3 class="font-black text-white mb-3">How to Play</h3>
-                            <div class="space-y-2 text-sm text-gray-400 leading-relaxed">
-                                <p>• Roll the dice and move forward by that number.</p>
-                                <p>• Land at the bottom of a ladder to climb upward.</p>
-                                <p>• Land on a snake's head and slide down to its tail.</p>
-                                <p>• You need an exact roll to land on <b class="text-white">100</b>.</p>
-                                <p>• First player to square 100 wins.</p>
-                            </div>
-                        </div>
-
-                        <div class="glass rounded-3xl p-5 border border-border/50">
-                            <p class="text-xs text-gray-500 uppercase tracking-widest font-bold mb-2">Last Move</p>
-                            <p id="sl-message" class="text-sm text-white font-semibold min-h-[44px]">Press Roll Dice to begin.</p>
-                        </div>
-                    </aside>
-                </div>
-            </div>
-        `;
-    },
-
-
-
     'ludo-3d': () => {
         setTimeout(() => initLudo3D(), 100);
         return `
@@ -1288,11 +1201,6 @@ const Pages = {
 
     'tournament-trex': () => {
         setTimeout(() => initSnakeStyleTournament('boy-runner'), 80);
-        return `<div id="sst-container" class="animate-fade-in min-h-full"></div>`;
-    },
-
-    'tournament-snakes-ladders': () => {
-        setTimeout(() => initSnakeStyleTournament('snakes-ladders'), 80);
         return `<div id="sst-container" class="animate-fade-in min-h-full"></div>`;
     },
 
@@ -1883,281 +1791,6 @@ function initCheckers3D(){
     canvas.addEventListener('pointerdown',click);
     resetBtn.onclick=reset;again.onclick=reset;
     soundBtn.onclick=()=>{soundOn=!soundOn;soundBtn.textContent=soundOn?'🔊':'🔇'};
-    reset();
-}
-
-function initSnakesLadders() {
-    const canvas = document.getElementById('sl-canvas');
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    const playerPosEl = document.getElementById('sl-player-pos');
-    const cpuPosEl = document.getElementById('sl-cpu-pos');
-    const turnEl = document.getElementById('sl-turn');
-    const diceEl = document.getElementById('sl-dice');
-    const rollTextEl = document.getElementById('sl-roll-text');
-    const rollBtn = document.getElementById('sl-roll');
-    const resetBtn = document.getElementById('sl-reset');
-    const soundBtn = document.getElementById('sl-sound');
-    const msgEl = document.getElementById('sl-message');
-    const winOverlay = document.getElementById('sl-win-overlay');
-    const winTitle = document.getElementById('sl-win-title');
-    const winSub = document.getElementById('sl-win-sub');
-    const playAgain = document.getElementById('sl-play-again');
-
-    const SIZE = 900, CELL = SIZE / 10;
-    const colors = ['#facc15','#ef4444','#22c55e','#38bdf8','#f97316','#a3e635','#eab308','#ec4899','#14b8a6','#fde047'];
-    const ladders = {3:22,8:30,20:41,27:56,36:44,51:67,71:92,80:99};
-    const snakes = {17:4,32:10,48:26,62:18,74:53,87:24,95:75,98:79};
-    const diceFaces = ['⚀','⚁','⚂','⚃','⚄','⚅'];
-
-    let player=1,cpu=1,turn='player',busy=false,gameOver=false,soundOn=true;
-    let audioCtx=null;
-
-    function tone(freq=440,d=.09,type='sine',vol=.025,end=null){
-        if(!soundOn)return;
-        const AC=window.AudioContext||window.webkitAudioContext;
-        if(!AC)return;
-        if(!audioCtx)audioCtx=new AC();
-        if(audioCtx.state==='suspended')audioCtx.resume().catch(()=>{});
-        const o=audioCtx.createOscillator(),g=audioCtx.createGain(),t=audioCtx.currentTime;
-        o.type=type;o.frequency.setValueAtTime(freq,t);
-        if(end)o.frequency.exponentialRampToValueAtTime(Math.max(1,end),t+d);
-        g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+d);
-        o.connect(g);g.connect(audioCtx.destination);o.start(t);o.stop(t+d+.02);
-    }
-
-    function squareCenter(n){
-        n=Math.max(1,Math.min(100,n));
-        const idx=n-1, row=Math.floor(idx/10), pos=idx%10;
-        const col=row%2===0 ? pos : 9-pos;
-        return {x:col*CELL+CELL/2,y:SIZE-(row*CELL+CELL/2)};
-    }
-
-    function drawBoard(){
-        ctx.clearRect(0,0,SIZE,SIZE);
-        ctx.fillStyle='#172033';ctx.fillRect(0,0,SIZE,SIZE);
-
-        for(let row=0;row<10;row++){
-            for(let pos=0;pos<10;pos++){
-                const n=row*10+pos+1;
-                const col=row%2===0?pos:9-pos;
-                const x=col*CELL,y=SIZE-(row+1)*CELL;
-                ctx.fillStyle=colors[(row*3+col)%colors.length];
-                ctx.globalAlpha=.93;
-                ctx.fillRect(x,y,CELL,CELL);
-                ctx.globalAlpha=1;
-                ctx.strokeStyle='rgba(15,23,42,.45)';
-                ctx.lineWidth=2;
-                ctx.strokeRect(x,y,CELL,CELL);
-
-                ctx.fillStyle='rgba(15,23,42,.83)';
-                ctx.font='900 24px Inter,Arial';
-                ctx.textAlign='center';ctx.textBaseline='middle';
-                ctx.fillText(String(n),x+CELL/2,y+CELL/2);
-            }
-        }
-
-        // Start and finish labels
-        const s=squareCenter(1),f=squareCenter(100);
-        ctx.fillStyle='#0f172a';ctx.font='900 13px Inter,Arial';
-        ctx.fillText('START',s.x,s.y+28);
-        ctx.fillText('HOME',f.x,f.y+28);
-
-        drawLadders();
-        drawSnakes();
-        drawTokens();
-    }
-
-    function drawLadders(){
-        Object.entries(ladders).forEach(([a,b])=>{
-            const p1=squareCenter(+a),p2=squareCenter(+b);
-            const dx=p2.x-p1.x,dy=p2.y-p1.y,len=Math.hypot(dx,dy),nx=-dy/len,ny=dx/len;
-            const gap=10;
-            ctx.save();
-            ctx.strokeStyle='#f8fafc';ctx.lineWidth=8;ctx.lineCap='round';
-            ctx.beginPath();ctx.moveTo(p1.x+nx*gap,p1.y+ny*gap);ctx.lineTo(p2.x+nx*gap,p2.y+ny*gap);ctx.stroke();
-            ctx.beginPath();ctx.moveTo(p1.x-nx*gap,p1.y-ny*gap);ctx.lineTo(p2.x-nx*gap,p2.y-ny*gap);ctx.stroke();
-            ctx.strokeStyle='#64748b';ctx.lineWidth=3;
-            const steps=Math.max(4,Math.floor(len/34));
-            for(let i=1;i<steps;i++){
-                const t=i/steps,cx=p1.x+dx*t,cy=p1.y+dy*t;
-                ctx.beginPath();ctx.moveTo(cx+nx*gap,cy+ny*gap);ctx.lineTo(cx-nx*gap,cy-ny*gap);ctx.stroke();
-            }
-            ctx.restore();
-        });
-    }
-
-    function snakeCurve(from,to,index){
-        const a=squareCenter(from),b=squareCenter(to);
-        const dx=b.x-a.x,dy=b.y-a.y,len=Math.hypot(dx,dy),nx=-dy/len,ny=dx/len;
-        const amp=18+(index%3)*5;
-        const pts=[];
-        for(let i=0;i<=30;i++){
-            const t=i/30;
-            pts.push({x:a.x+dx*t+nx*Math.sin(t*Math.PI*5)*amp,y:a.y+dy*t+ny*Math.sin(t*Math.PI*5)*amp});
-        }
-        return {a,b,pts};
-    }
-
-    function drawSnakes(){
-        Object.entries(snakes).forEach(([from,to],idx)=>{
-            const {a,pts}=snakeCurve(+from,+to,idx);
-            ctx.save();
-            ctx.lineCap='round';ctx.lineJoin='round';
-            ctx.strokeStyle=idx%2?'#1f2937':'#7c2d12';
-            ctx.lineWidth=18;
-            ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i].x,pts[i].y);ctx.stroke();
-            ctx.strokeStyle=idx%2?'#f59e0b':'#22c55e';
-            ctx.lineWidth=11;
-            ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i].x,pts[i].y);ctx.stroke();
-
-            // snake head
-            ctx.translate(a.x,a.y);
-            ctx.fillStyle=idx%2?'#f59e0b':'#22c55e';
-            ctx.beginPath();ctx.ellipse(0,0,17,13,0,0,Math.PI*2);ctx.fill();
-            ctx.fillStyle='#fff';
-            ctx.beginPath();ctx.arc(-6,-3,3,0,Math.PI*2);ctx.arc(6,-3,3,0,Math.PI*2);ctx.fill();
-            ctx.fillStyle='#111827';
-            ctx.beginPath();ctx.arc(-6,-3,1.4,0,Math.PI*2);ctx.arc(6,-3,1.4,0,Math.PI*2);ctx.fill();
-            ctx.strokeStyle='#ef4444';ctx.lineWidth=2;
-            ctx.beginPath();ctx.moveTo(0,9);ctx.lineTo(0,20);ctx.stroke();
-            ctx.restore();
-        });
-    }
-
-    function token(n,color,offsetX,label){
-        const p=squareCenter(n);
-        ctx.save();
-        ctx.translate(p.x+offsetX,p.y);
-        ctx.shadowBlur=12;ctx.shadowColor=color;
-        ctx.fillStyle=color;
-        ctx.beginPath();ctx.arc(0,0,18,0,Math.PI*2);ctx.fill();
-        ctx.shadowBlur=0;
-        ctx.fillStyle='#fff';ctx.font='900 15px Inter,Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(label,0,1);
-        ctx.restore();
-    }
-
-    function drawTokens(){
-        token(player,'#0284c7',player===cpu?-13:0,'P');
-        token(cpu,'#ec4899',player===cpu?13:0,'C');
-    }
-
-    function updateUI(){
-        playerPosEl.textContent='Square '+player;
-        cpuPosEl.textContent='Square '+cpu;
-        turnEl.textContent=turn==='player'?'Your Turn':'CPU Turn';
-        turnEl.className='text-2xl font-black '+(turn==='player'?'text-sky-400':'text-pink-400');
-        rollBtn.disabled=busy||gameOver||turn!=='player';
-        rollBtn.style.opacity=rollBtn.disabled?'.55':'1';
-        drawBoard();
-    }
-
-    function animateDice(done){
-        let ticks=0;
-        const id=setInterval(()=>{
-            const v=1+Math.floor(Math.random()*6);
-            diceEl.textContent=diceFaces[v-1];
-            rollTextEl.textContent='Rolling...';
-            tone(220+v*35,.025,'square',.012);
-            if(++ticks>=10){clearInterval(id);done();}
-        },55);
-    }
-
-    function moveToken(who,roll,after){
-        const start=who==='player'?player:cpu;
-        let target=start+roll;
-        if(target>100){
-            msgEl.textContent=(who==='player'?'You':'CPU')+' need an exact roll to reach 100.';
-            setTimeout(after,550);return;
-        }
-        let current=start;
-        function step(){
-            current++;
-            if(who==='player')player=current;else cpu=current;
-            tone(310,.035,'sine',.015,380);
-            updateUI();
-            if(current<target)setTimeout(step,130);
-            else setTimeout(()=>applySpecial(who,after),300);
-        }
-        if(target===start){after();return}
-        step();
-    }
-
-    function applySpecial(who,after){
-        let pos=who==='player'?player:cpu;
-        if(ladders[pos]){
-            const dest=ladders[pos];
-            msgEl.textContent=(who==='player'?'You':'CPU')+' found a ladder! '+pos+' → '+dest;
-            tone(420,.35,'sine',.03,900);
-            if(who==='player')player=dest;else cpu=dest;
-            updateUI();
-            setTimeout(()=>finishTurn(who,after),700);
-        }else if(snakes[pos]){
-            const dest=snakes[pos];
-            msgEl.textContent=(who==='player'?'You':'CPU')+' hit a snake! '+pos+' → '+dest;
-            tone(250,.4,'sawtooth',.025,90);
-            if(who==='player')player=dest;else cpu=dest;
-            updateUI();
-            setTimeout(()=>finishTurn(who,after),700);
-        }else{
-            msgEl.textContent=(who==='player'?'You':'CPU')+' moved to square '+pos+'.';
-            finishTurn(who,after);
-        }
-    }
-
-    function finishTurn(who,after){
-        const pos=who==='player'?player:cpu;
-        if(pos===100){
-            gameOver=true;busy=false;
-            winTitle.textContent=who==='player'?'You Win!':'CPU Wins!';
-            winSub.textContent=(who==='player'?'You reached':'CPU reached')+' square 100 first.';
-            winOverlay.classList.remove('hidden');
-            tone(who==='player'?740:180,.55,who==='player'?'sine':'sawtooth',.035,who==='player'?1100:80);
-            updateUI();return;
-        }
-        after();
-    }
-
-    function doRoll(who){
-        if(busy||gameOver)return;
-        busy=true;updateUI();
-        animateDice(()=>{
-            const roll=1+Math.floor(Math.random()*6);
-            diceEl.textContent=diceFaces[roll-1];
-            rollTextEl.textContent=(who==='player'?'You rolled ':'CPU rolled ')+roll;
-            tone(500+roll*50,.08,'sine',.025);
-            moveToken(who,roll,()=>{
-                if(gameOver)return;
-                turn=who==='player'?'cpu':'player';
-                busy=false;updateUI();
-                if(turn==='cpu'){
-                    msgEl.textContent='CPU is rolling...';
-                    setTimeout(()=>doRoll('cpu'),900);
-                }else{
-                    msgEl.textContent='Your turn. Roll the dice.';
-                }
-            });
-        });
-    }
-
-    function reset(){
-        player=1;cpu=1;turn='player';busy=false;gameOver=false;
-        diceEl.textContent='⚄';rollTextEl.textContent='Roll to start';
-        msgEl.textContent='Press Roll Dice to begin.';
-        winOverlay.classList.add('hidden');
-        updateUI();
-    }
-
-    rollBtn.onclick=()=>doRoll('player');
-    resetBtn.onclick=reset;
-    playAgain.onclick=reset;
-    soundBtn.onclick=()=>{soundOn=!soundOn;soundBtn.textContent=soundOn?'🔊':'🔇';};
-
-    canvas.addEventListener('pointerdown',()=>{
-        if(turn==='player'&&!busy&&!gameOver)doRoll('player');
-    });
-
     reset();
 }
 
@@ -3220,11 +2853,6 @@ function initSnakeStyleTournament(gameKey) {
             matchLabel:'RUNNER MATCH', description:'Collect coins, jump hurdles, sit under flying obstacles and use FIRE to destroy breakable hurdles.',
             route:'#tournament-trex'
         },
-        'snakes-ladders': {
-            title:'Snakes & Ladders', icon:'🎲', accent:'#2563EB', opponentAccent:'#EF4444',
-            matchLabel:'BOARD MATCH', description:'Roll the dice, climb ladders and reach square 100 before your opponent.',
-            route:'#tournament-snakes-ladders'
-        },
         'ludo-3d': {
             title:'Ludo 3D', icon:'🎯', accent:'#2563EB', opponentAccent:'#EF4444',
             matchLabel:'LUDO MATCH', description:'Roll the dice and race your token to Home before the opponent.',
@@ -3344,7 +2972,6 @@ function initSnakeStyleTournament(gameKey) {
 
     function match(){
         if(gameKey==='boy-runner') runnerMatch();
-        else if(gameKey==='snakes-ladders') snakesMatch();
         else if(gameKey==='ludo-3d') ludoMatch();
         else if(gameKey==='checkers-3d') checkersMatch();
         else chessMatch();
@@ -3409,21 +3036,6 @@ function initSnakeStyleTournament(gameKey) {
         const sb=document.getElementById('sst-run-sit');sb.onpointerdown=()=>sit(true);sb.onpointerup=sb.onpointerleave=()=>sit(false);
         draw();raf=requestAnimationFrame(step);
         cleanup=()=>{running=false;cancelAnimationFrame(raf);document.removeEventListener('keydown',kd);document.removeEventListener('keyup',ku)};
-    }
-
-    // ---------------- SNAKES & LADDERS ----------------
-    function snakesMatch(){
-        const arena=`<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="rounded-3xl p-3 border border-primary/40 bg-slate-900/80"><canvas id="sst-sl" width="620" height="620" class="w-full rounded-2xl"></canvas><button id="sst-sl-roll" class="w-full mt-3 py-3 rounded-xl bg-primary font-black">🎲 Roll Dice</button><p id="sst-sl-msg" class="text-center text-sm text-gray-300 mt-2">Your turn</p></div>
-            <div class="rounded-3xl p-5 border border-danger/40 bg-slate-900/80 flex flex-col items-center justify-center"><div class="text-6xl">🎲</div><p class="text-gray-500 font-black mt-4">CPU BOARD FEED</p><div class="mt-8 px-5 py-2 rounded-full bg-green-500/10 text-success border border-green-500/40 font-black">ALIVE</div></div>
-        </div>`;
-        container.innerHTML=topMatchShell(playerHeader(me,'sst-you-score','#22C55E'),playerHeader(opponent,'sst-cpu-score','#EF4444'),arena);
-        const c=document.getElementById('sst-sl'),x=c.getContext('2d'),S=620,C=62,ladd={3:22,8:30,20:41,27:56,36:44,51:67,71:92,80:99},snk={17:4,32:10,48:26,62:18,74:53,87:24,95:75,98:79};
-        let p=1,cpu=1,turn=0,busy=false,alive=true;
-        function cell(n){let z=n-1,r=Math.floor(z/10),v=z%10,col=r%2?v:9-v;return{x:col*C+C/2,y:S-(r*C+C/2)}}
-        function draw(){const cs=['#facc15','#ef4444','#22c55e','#38bdf8','#f97316'];for(let r=0;r<10;r++)for(let v=0;v<10;v++){let n=r*10+v+1,col=r%2?v:9-v,xx=col*C,yy=S-(r+1)*C;x.fillStyle=cs[(r+col)%cs.length];x.fillRect(xx,yy,C,C);x.strokeStyle='#334155';x.strokeRect(xx,yy,C,C);x.fillStyle='#111827';x.font='bold 15px sans-serif';x.textAlign='center';x.fillText(n,xx+C/2,yy+C/2+5)}Object.entries(ladd).forEach(([a,b])=>{let A=cell(+a),B=cell(+b);x.strokeStyle='#fff';x.lineWidth=6;x.beginPath();x.moveTo(A.x,A.y);x.lineTo(B.x,B.y);x.stroke()});Object.entries(snk).forEach(([a,b])=>{let A=cell(+a),B=cell(+b);x.strokeStyle='#16a34a';x.lineWidth=8;x.beginPath();x.moveTo(A.x,A.y);x.bezierCurveTo((A.x+B.x)/2+25,A.y,(A.x+B.x)/2-25,B.y,B.x,B.y);x.stroke()});[[p,'#2563eb','Y'],[cpu,'#ef4444','C']].forEach(([n,col,l])=>{let q=cell(n);x.fillStyle=col;x.beginPath();x.arc(q.x,q.y,14,0,Math.PI*2);x.fill();x.fillStyle='#fff';x.font='bold 11px sans-serif';x.fillText(l,q.x,q.y+4)});document.getElementById('sst-you-score').textContent=p;document.getElementById('sst-cpu-score').textContent=cpu}
-        function move(who){if(!alive||busy)return;busy=true;const d=1+Math.floor(Math.random()*6);let n=who===0?p:cpu;if(n+d<=100)n+=d;if(ladd[n])n=ladd[n];if(snk[n])n=snk[n];if(who===0)p=n;else cpu=n;draw();document.getElementById('sst-sl-msg').textContent=(who===0?'You':'CPU')+' rolled '+d;if(n===100){alive=false;setTimeout(()=>finish(who===0),450);return}setTimeout(()=>{turn=1-who;busy=false;if(turn===1)setTimeout(()=>move(1),450)},450)}
-        document.getElementById('sst-sl-roll').onclick=()=>{if(turn===0)move(0)};draw();cleanup=()=>{alive=false};
     }
 
     // ---------------- LUDO 3D ----------------
