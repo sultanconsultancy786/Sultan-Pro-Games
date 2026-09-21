@@ -1824,7 +1824,7 @@ function initTrexGame() {
 
     for(let i=0;i<95;i++) stars.push({x:Math.random()*W,y:Math.random()*320,r:Math.random()*1.6+.3,a:Math.random()*.75+.2});
 
-    const boy={x:210,y:groundY-96,w:62,h:96,normalH:96,duckH:52,vy:0,onGround:true,ducking:false};
+    const boy={x:300,y:groundY-136,w:92,h:136,normalH:136,duckH:72,vy:0,onGround:true,ducking:false};
 
     const audio = {
         ctx:null,
@@ -1910,20 +1910,20 @@ function initTrexGame() {
 
         if(roll < .25){
             const w=95+Math.random()*35,h=32+Math.random()*8;
-            obstacles.push({x:W+50,y:groundY-102-Math.random()*15,w,h,type:'air',phase:Math.random()*6});
+            obstacles.push({x:900+Math.random()*120,y:groundY-102-Math.random()*15,w,h,type:'air',phase:Math.random()*6});
         }else if(roll < .48){
             const w=62+Math.random()*40,h=44+Math.random()*14;
-            obstacles.push({x:W+50,y:groundY-h,w,h,type:'fire',phase:Math.random()*6});
+            obstacles.push({x:900+Math.random()*120,y:groundY-h,w,h,type:'fire',phase:Math.random()*6});
         }else if(roll < .72){
             const w=72+Math.random()*28,h=58+Math.random()*22;
-            obstacles.push({x:W+50,y:groundY-h,w,h,type:'hurdle',phase:0});
+            obstacles.push({x:900+Math.random()*120,y:groundY-h,w,h,type:'hurdle',phase:0});
         }else{
             const tall=Math.random()>.5,w=34+Math.random()*18,h=tall?88+Math.random()*34:56+Math.random()*24;
-            obstacles.push({x:W+50,y:groundY-h,w,h,type:'ground',phase:0});
+            obstacles.push({x:900+Math.random()*120,y:groundY-h,w,h,type:'ground',phase:0});
         }
 
         if(Math.random()<.7){
-            const baseX=W+130+Math.random()*100;
+            const baseX=920+Math.random()*120;
             const count=1+Math.floor(Math.random()*3);
             for(let i=0;i<count;i++) coinItems.push({x:baseX+i*45,y:groundY-145-Math.random()*60,r:14,t:Math.random()*6});
         }
@@ -1981,288 +1981,185 @@ function initTrexGame() {
     }
 
     function drawBackground(){
-        const sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,'#020617');sky.addColorStop(.58,'#082f49');sky.addColorStop(1,'#5b341f');ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
-        stars.forEach(s=>{ctx.globalAlpha=s.a;ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill()});ctx.globalAlpha=1;
+        // Premium endless-runner environment: the road sits on the LEFT side and curves into the distance.
+        // The runner stays on the left lane; the right side is reserved for city depth and scenery.
+        const horizon=338, vpX=515, groundBottom=672;
 
-        // moon
-        ctx.save();ctx.translate(250,155);ctx.fillStyle='#fff7d6';ctx.beginPath();ctx.arc(0,0,38,0,Math.PI*2);ctx.fill();ctx.globalCompositeOperation='destination-out';ctx.beginPath();ctx.arc(17,-10,35,0,Math.PI*2);ctx.fill();ctx.restore();
+        const sky=ctx.createLinearGradient(0,0,0,groundY);
+        sky.addColorStop(0,'#07111f');sky.addColorStop(.42,'#183b5b');
+        sky.addColorStop(.72,'#9a5360');sky.addColorStop(1,'#f2ad69');
+        ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
 
-        // distant mesas
-        ctx.fillStyle='#25364e';
-        [[0,430,95,70],[115,455,75,45],[410,438,70,60],[680,450,95,48],[960,445,65,55],[1170,430,80,70]].forEach(([x,y,w,h])=>{ctx.fillRect(x,y,w,h);ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+w*.3,y-h*.25);ctx.lineTo(x+w*.75,y-h*.18);ctx.lineTo(x+w,y);ctx.fill()});
-        ctx.fillStyle='#3d2b25';ctx.fillRect(0,groundY-42,W,42);
-        ctx.fillStyle='#b96b2c';ctx.fillRect(0,groundY-15,W,15);
-        ctx.fillStyle='#6b3e22';ctx.fillRect(0,groundY,W,H-groundY);
-        ctx.fillStyle='#3a2117';
-        for(let x=0;x<W;x+=55)ctx.fillRect((x-(distance*4)%55),groundY+28,28,9);
+        const sun=ctx.createRadialGradient(620,235,4,620,235,190);
+        sun.addColorStop(0,'rgba(255,235,190,.48)');sun.addColorStop(1,'rgba(255,210,150,0)');
+        ctx.fillStyle=sun;ctx.fillRect(0,0,W,groundY);
+
+        const skyline=[
+            [0,118,72],[74,82,58],[138,142,80],[226,96,62],[294,130,74],[378,86,56],
+            [446,118,66],[525,78,58],[595,138,78],[680,92,62],[750,158,82],[842,105,66],
+            [920,142,74],[1004,88,58],[1070,126,76],[1152,96,62],[1222,150,58]
+        ];
+        skyline.forEach((b,i)=>{
+            const x=b[0],w=b[2],h=b[1],y=horizon-h;
+            const g=ctx.createLinearGradient(0,y,0,horizon+10);
+            g.addColorStop(0,i%3===0?'#101c34':'#142238');g.addColorStop(1,'#08111f');
+            ctx.fillStyle=g;ctx.fillRect(x,y,w,h);
+            for(let wy=y+12;wy<horizon-8;wy+=19){
+                for(let wx=x+9;wx<x+w-7;wx+=18){
+                    if(((i*17+Math.floor(wx)+Math.floor(wy))%43)<21){
+                        ctx.fillStyle=i%2?'rgba(96,165,250,.60)':'rgba(250,204,21,.56)';
+                        ctx.fillRect(wx,wy,5,7);
+                    }
+                }
+            }
+        });
+
+        ctx.fillStyle='#111b29';ctx.fillRect(0,horizon,W,H-horizon);
+        ctx.fillStyle='#182536';ctx.fillRect(900,horizon,380,H-horizon);
+
+        // Curved left-side running road.
+        const curveX=(p)=>vpX + 120*Math.sin(p*1.15);
+        const roadHalf=(p)=>34 + 470*Math.pow(p,1.16);
+        const yAt=(p)=>horizon + p*(groundBottom-horizon);
+
+        ctx.beginPath();
+        for(let i=0;i<=36;i++){
+            const p=i/36,y=yAt(p),cx=curveX(p),half=roadHalf(p);
+            if(i===0)ctx.moveTo(cx-half,y);else ctx.lineTo(cx-half,y);
+        }
+        for(let i=36;i>=0;i--){
+            const p=i/36,y=yAt(p),cx=curveX(p),half=roadHalf(p);
+            ctx.lineTo(cx+half,y);
+        }
+        ctx.closePath();
+        const roadGrad=ctx.createLinearGradient(0,horizon,0,groundBottom);
+        roadGrad.addColorStop(0,'#344353');roadGrad.addColorStop(.5,'#202d3b');roadGrad.addColorStop(1,'#111923');
+        ctx.fillStyle=roadGrad;ctx.fill();
+
+        // Kerbs / shoulders.
+        ctx.strokeStyle='#f6b34d';ctx.lineWidth=8;
+        for(const side of [-1,1]){
+            ctx.beginPath();
+            for(let i=0;i<=36;i++){
+                const p=i/36,y=yAt(p),x=curveX(p)+side*roadHalf(p);
+                if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+            }
+            ctx.stroke();
+        }
+
+        // Asphalt depth bands.
+        for(let i=1;i<19;i++){
+            const p=i/19,y=yAt(p),cx=curveX(p),half=roadHalf(p);
+            ctx.strokeStyle='rgba(255,255,255,.055)';ctx.lineWidth=2;
+            ctx.beginPath();ctx.moveTo(cx-half,y);ctx.lineTo(cx+half,y);ctx.stroke();
+        }
+
+        // Animated lane separators following the road curve.
+        const laneOffsets=[-0.33,0.33],dashPhase=(distance*0.006)%0.115;
+        for(const off of laneOffsets){
+            for(let i=-2;i<20;i++){
+                const p=Math.min(1,Math.max(.02,i*.105-dashPhase));
+                const p2=Math.min(1,p+.045+.035*p);
+                const y1=yAt(p),y2=yAt(p2),c1=curveX(p),c2=curveX(p2),h1=roadHalf(p),h2=roadHalf(p2);
+                const x1=c1+off*h1,x2=c2+off*h2;
+                ctx.strokeStyle='rgba(255,255,255,.92)';ctx.lineWidth=3+5*p;
+                ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+            }
+        }
+
+        // Far-side barrier.
+        ctx.strokeStyle='rgba(148,163,184,.85)';ctx.lineWidth=7;
+        ctx.beginPath();
+        for(let i=0;i<=24;i++){
+            const p=i/24,y=yAt(p),x=curveX(p)+roadHalf(p)+7;
+            if(i===0)ctx.moveTo(x,y-7);else ctx.lineTo(x,y-7);
+        }
+        ctx.stroke();
+
+        // Perspective street lights.
+        for(let i=1;i<13;i++){
+            const p=i/13,y=yAt(p),x=curveX(p)+roadHalf(p)+18,poleH=14+42*p;
+            ctx.strokeStyle='rgba(203,213,225,.72)';ctx.lineWidth=Math.max(2,4*p);
+            ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y-poleH);ctx.stroke();
+            ctx.strokeStyle='rgba(148,163,184,.6)';ctx.lineWidth=Math.max(1,2*p);
+            ctx.beginPath();ctx.moveTo(x,y-poleH);ctx.lineTo(x-10*p,y-poleH+2);ctx.stroke();
+            ctx.fillStyle='rgba(255,226,160,.75)';ctx.beginPath();ctx.arc(x-11*p,y-poleH+2,3+5*p,0,Math.PI*2);ctx.fill();
+        }
+
+        // Foreground motion texture.
+        ctx.globalAlpha=.22;ctx.strokeStyle='#dbeafe';ctx.lineWidth=3;
+        const streak=(distance*70)%130;
+        for(let i=0;i<24;i++){
+            const p=.60+((i*0.055)-(streak/130)*.055);
+            if(p<.55||p>1)continue;
+            const y=yAt(p),cx=curveX(p),half=roadHalf(p),x=cx-half*.72+(i%3)*half*.12;
+            ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+28+45*p,y);ctx.stroke();
+        }
+        ctx.globalAlpha=1;
+
+        // Right-side city mass keeps the runner/road visually left-weighted.
+        ctx.fillStyle='rgba(5,12,22,.40)';
+        ctx.beginPath();
+        ctx.moveTo(820,horizon);ctx.lineTo(860,285);ctx.lineTo(910,305);ctx.lineTo(950,250);
+        ctx.lineTo(1010,300);ctx.lineTo(1060,225);ctx.lineTo(1110,300);ctx.lineTo(1170,260);
+        ctx.lineTo(1230,300);ctx.lineTo(1280,270);ctx.lineTo(1280,groundY);ctx.lineTo(820,groundY);
+        ctx.closePath();ctx.fill();
     }
 
     function drawBoy(){
-        const x=boy.x,y=boy.y;
-        ctx.save();
-        ctx.lineCap='round';
-        ctx.lineJoin='round';
+        // Larger human-like runner placed on the LEFT lane.
+        const x=boy.x,y=boy.y,t=runClock;
+        ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
+        const s=1.42;ctx.translate(x,y);ctx.scale(s,s);
+        const bob=boy.onGround&&!boy.ducking?Math.sin(t*2.4)*1.8:0;
+        const legSwing=Math.sin(t)*20,armSwing=Math.sin(t+Math.PI)*17;
 
-        // Ground shadow
-        if(boy.onGround){
-            ctx.save();
-            ctx.globalAlpha=.24;
-            ctx.fillStyle='#000';
-            ctx.beginPath();
-            ctx.ellipse(x+36,groundY+3,34,8,0,0,Math.PI*2);
-            ctx.fill();
-            ctx.restore();
-        }
-
-        const t=runClock;
-        const bob=boy.onGround&&!boy.ducking?Math.sin(t*2)*1.5:0;
-        const legSwing=Math.sin(t)*17;
-        const armSwing=Math.sin(t+Math.PI)*14;
+        ctx.globalAlpha=.32;ctx.fillStyle='#020617';ctx.beginPath();
+        ctx.ellipse(40,106,45,10,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
 
         if(boy.ducking){
-            const yy=y+bob;
-
-            // Legs in low sliding pose
-            ctx.strokeStyle='#111827';
-            ctx.lineWidth=14;
-            ctx.beginPath();
-            ctx.moveTo(x+38,yy+35);
-            ctx.lineTo(x+61,yy+47);
-            ctx.lineTo(x+82,yy+47);
-            ctx.stroke();
-
-            ctx.strokeStyle='#e5e7eb';
-            ctx.lineWidth=9;
-            ctx.beginPath();
-            ctx.moveTo(x+77,yy+48);
-            ctx.lineTo(x+92,yy+48);
-            ctx.stroke();
-
-            ctx.strokeStyle='#111827';
-            ctx.lineWidth=14;
-            ctx.beginPath();
-            ctx.moveTo(x+35,yy+39);
-            ctx.lineTo(x+20,yy+49);
-            ctx.lineTo(x+7,yy+49);
-            ctx.stroke();
-
-            ctx.strokeStyle='#60a5fa';
-            ctx.lineWidth=9;
-            ctx.beginPath();
-            ctx.moveTo(x+3,yy+50);
-            ctx.lineTo(x+18,yy+50);
-            ctx.stroke();
-
-            // Torso
-            const dg=ctx.createLinearGradient(x+20,yy+15,x+58,yy+45);
-            dg.addColorStop(0,'#2196f3');
-            dg.addColorStop(1,'#0d47a1');
-            ctx.fillStyle=dg;
-            ctx.beginPath();
-            ctx.roundRect(x+19,yy+14,40,30,10);
-            ctx.fill();
-
-            // Arm
-            ctx.strokeStyle='#d5a07d';
-            ctx.lineWidth=8;
-            ctx.beginPath();
-            ctx.moveTo(x+50,yy+23);
-            ctx.lineTo(x+68,yy+29);
-            ctx.lineTo(x+80,yy+27);
-            ctx.stroke();
-            ctx.fillStyle='#d5a07d';
-            ctx.beginPath();
-            ctx.arc(x+82,yy+27,5,0,Math.PI*2);
-            ctx.fill();
-
-            // Neck + face
-            ctx.fillStyle='#d5a07d';
-            ctx.fillRect(x+21,yy+10,8,9);
-
-            const sg=ctx.createRadialGradient(x+16,yy+12,3,x+15,yy+15,17);
-            sg.addColorStop(0,'#edbd99');
-            sg.addColorStop(1,'#bf805f');
-            ctx.fillStyle=sg;
-            ctx.beginPath();
-            ctx.ellipse(x+14,yy+14,13,15,-.08,0,Math.PI*2);
-            ctx.fill();
-
-            // Hair
-            ctx.fillStyle='#151515';
-            ctx.beginPath();
-            ctx.moveTo(x+1,yy+10);
-            ctx.quadraticCurveTo(x+5,yy-4,x+18,yy);
-            ctx.quadraticCurveTo(x+29,yy+1,x+27,yy+10);
-            ctx.quadraticCurveTo(x+21,yy+5,x+16,yy+9);
-            ctx.quadraticCurveTo(x+9,yy+5,x+1,yy+10);
-            ctx.fill();
-
-            // Face
-            ctx.fillStyle='#111';
-            ctx.beginPath();ctx.arc(x+18,yy+14,1.6,0,Math.PI*2);ctx.fill();
-            ctx.strokeStyle='#874a34';
-            ctx.lineWidth=1.2;
-            ctx.beginPath();ctx.moveTo(x+18,yy+22);ctx.quadraticCurveTo(x+21,yy+24,x+24,yy+21);ctx.stroke();
-
-            ctx.restore();
-            return;
+            ctx.fillStyle='#0f172a';ctx.beginPath();ctx.roundRect(18,45,70,19,9);ctx.fill();
+            ctx.fillStyle='#2563eb';ctx.beginPath();ctx.roundRect(17,22,54,34,12);ctx.fill();
+            ctx.fillStyle='#d7a07b';ctx.beginPath();ctx.ellipse(13,19,15,18,-.12,0,Math.PI*2);ctx.fill();
+            ctx.fillStyle='#111318';ctx.beginPath();ctx.arc(13,11,16,Math.PI,Math.PI*2);ctx.fill();
+            ctx.restore();return;
         }
 
-        const yy=y+bob;
-        const hipX=x+31, hipY=yy+66;
+        const yy=y+bob,hipX=39,hipY=70;
 
-        // Back leg
-        ctx.strokeStyle='#111827';
-        ctx.lineWidth=13;
-        ctx.beginPath();
-        ctx.moveTo(hipX,hipY);
-        ctx.lineTo(x+29-legSwing*.62,yy+80);
-        ctx.lineTo(x+22-legSwing,yy+94);
-        ctx.stroke();
+        ctx.strokeStyle='#172033';ctx.lineWidth=16;
+        ctx.beginPath();ctx.moveTo(hipX,hipY);ctx.lineTo(29-legSwing*.5,89);ctx.lineTo(17-legSwing,107);ctx.stroke();
+        ctx.strokeStyle='#334155';ctx.lineWidth=12;
+        ctx.beginPath();ctx.moveTo(hipX+5,hipY);ctx.lineTo(55+legSwing*.48,89);ctx.lineTo(70+legSwing,103);ctx.stroke();
 
-        ctx.strokeStyle='#60a5fa';
-        ctx.lineWidth=8;
-        ctx.beginPath();
-        ctx.moveTo(x+18-legSwing,yy+95);
-        ctx.lineTo(x+31-legSwing,yy+95);
-        ctx.stroke();
+        ctx.fillStyle='#f8fafc';ctx.beginPath();ctx.roundRect(5-legSwing,103,34,10,5);ctx.fill();
+        ctx.fillStyle='#22d3ee';ctx.fillRect(20-legSwing,104,15,4);
+        ctx.fillStyle='#f8fafc';ctx.beginPath();ctx.roundRect(63+legSwing,99,39,10,5);ctx.fill();
+        ctx.fillStyle='#60a5fa';ctx.fillRect(78+legSwing,100,16,4);
 
-        // Front leg
-        ctx.strokeStyle='#0f172a';
-        ctx.lineWidth=14;
-        ctx.beginPath();
-        ctx.moveTo(hipX+4,hipY);
-        ctx.lineTo(x+42+legSwing*.58,yy+78);
-        ctx.lineTo(x+48+legSwing,yy+91);
-        ctx.stroke();
+        ctx.fillStyle='#0b1220';ctx.beginPath();ctx.roundRect(23,61,48,26,8);ctx.fill();
+        const jacket=ctx.createLinearGradient(18,32,73,82);
+        jacket.addColorStop(0,'#38bdf8');jacket.addColorStop(.45,'#2563eb');jacket.addColorStop(1,'#0f172a');
+        ctx.fillStyle=jacket;ctx.beginPath();ctx.roundRect(19,32,55,51,15);ctx.fill();
+        ctx.strokeStyle='rgba(255,255,255,.34)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(47,36);ctx.lineTo(47,78);ctx.stroke();
+        ctx.fillStyle='#fff';ctx.font='900 8px Arial';ctx.textAlign='center';ctx.fillText('SP',47,62);
 
-        ctx.strokeStyle='#e5e7eb';
-        ctx.lineWidth=9;
-        ctx.beginPath();
-        ctx.moveTo(x+44+legSwing,yy+92);
-        ctx.lineTo(x+59+legSwing,yy+92);
-        ctx.stroke();
+        ctx.strokeStyle='#d49a76';ctx.lineWidth=11;
+        ctx.beginPath();ctx.moveTo(23,43);ctx.lineTo(7-armSwing*.35,58);ctx.lineTo(2-armSwing*.6,73);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(69,43);ctx.lineTo(84+armSwing*.35,57);ctx.lineTo(94+armSwing*.6,69);ctx.stroke();
+        ctx.fillStyle='#d9a27f';ctx.beginPath();ctx.arc(2-armSwing*.6,73,5.5,0,Math.PI*2);ctx.fill();
+        ctx.beginPath();ctx.arc(94+armSwing*.6,69,5.5,0,Math.PI*2);ctx.fill();
 
-        // Torso / hoodie
-        const torsoGrad=ctx.createLinearGradient(x+18,yy+33,x+49,yy+71);
-        torsoGrad.addColorStop(0,'#2196f3');
-        torsoGrad.addColorStop(1,'#0d47a1');
-        ctx.fillStyle=torsoGrad;
-        ctx.beginPath();
-        ctx.roundRect(x+16,yy+32,35,40,11);
-        ctx.fill();
+        ctx.fillStyle='#c88c69';ctx.fillRect(38,25,16,15);
+        const skin=ctx.createRadialGradient(49,13,2,42,22,28);
+        skin.addColorStop(0,'#f8d0ad');skin.addColorStop(.5,'#dca27c');skin.addColorStop(1,'#8d5543');
+        ctx.fillStyle=skin;ctx.beginPath();ctx.ellipse(45,20,21,24,-.08,0,Math.PI*2);ctx.fill();
 
-        ctx.fillStyle='#0c4a6e';
-        ctx.beginPath();
-        ctx.arc(x+28,yy+37,10,Math.PI,Math.PI*2);
-        ctx.fill();
-
-        // Arms
-        ctx.strokeStyle='#c98f6d';
-        ctx.lineWidth=8;
-        ctx.beginPath();
-        ctx.moveTo(x+19,yy+42);
-        ctx.lineTo(x+10-armSwing*.35,yy+55);
-        ctx.lineTo(x+7-armSwing*.55,yy+66);
-        ctx.stroke();
-
-        ctx.fillStyle='#d7a07b';
-        ctx.beginPath();
-        ctx.arc(x+6-armSwing*.55,yy+67,4.5,0,Math.PI*2);
-        ctx.fill();
-
-        ctx.strokeStyle='#d7a07b';
-        ctx.lineWidth=8;
-        ctx.beginPath();
-        ctx.moveTo(x+47,yy+42);
-        ctx.lineTo(x+58+armSwing*.35,yy+54);
-        ctx.lineTo(x+63+armSwing*.52,yy+60);
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.arc(x+65+armSwing*.52,yy+60,4.8,0,Math.PI*2);
-        ctx.fill();
-
-        // Neck
-        ctx.fillRect(x+27,yy+26,8,9);
-
-        // Realistic face
-        const skinGrad=ctx.createRadialGradient(x+34,yy+17,4,x+31,yy+20,18);
-        skinGrad.addColorStop(0,'#efc09d');
-        skinGrad.addColorStop(1,'#c78c69');
-        ctx.fillStyle=skinGrad;
-        ctx.beginPath();
-        ctx.ellipse(x+31,yy+20,14,17,-.08,0,Math.PI*2);
-        ctx.fill();
-
-        // Ear
-        ctx.fillStyle='#d39a76';
-        ctx.beginPath();
-        ctx.arc(x+18,yy+21,4,0,Math.PI*2);
-        ctx.fill();
-
-        // Hair mass
-        ctx.fillStyle='#141414';
-        ctx.beginPath();
-        ctx.moveTo(x+17,yy+14);
-        ctx.quadraticCurveTo(x+18,yy-4,x+33,yy+1);
-        ctx.quadraticCurveTo(x+45,yy-1,x+47,yy+8);
-        ctx.quadraticCurveTo(x+40,yy+4,x+35,yy+9);
-        ctx.quadraticCurveTo(x+28,yy+4,x+23,yy+10);
-        ctx.quadraticCurveTo(x+20,yy+9,x+17,yy+14);
-        ctx.fill();
-
-        // Hair detail
-        ctx.strokeStyle='#2d2d2d';
-        ctx.lineWidth=2;
-        for(let i=0;i<4;i++){
-            ctx.beginPath();
-            ctx.moveTo(x+23+i*5,yy+6);
-            ctx.lineTo(x+28+i*4,yy+1+(i%2)*2);
-            ctx.stroke();
-        }
-
-        // Brow / eye / nose / mouth
-        ctx.strokeStyle='#3d271c';
-        ctx.lineWidth=1.5;
-        ctx.beginPath();
-        ctx.moveTo(x+34,yy+15);
-        ctx.lineTo(x+40,yy+14);
-        ctx.stroke();
-
-        ctx.fillStyle='#111';
-        ctx.beginPath();
-        ctx.arc(x+38,yy+18,1.7,0,Math.PI*2);
-        ctx.fill();
-
-        ctx.strokeStyle='#9c6248';
-        ctx.lineWidth=1.2;
-        ctx.beginPath();
-        ctx.moveTo(x+42,yy+19);
-        ctx.lineTo(x+43,yy+24);
-        ctx.stroke();
-
-        ctx.strokeStyle='#7f4634';
-        ctx.lineWidth=1.4;
-        ctx.beginPath();
-        ctx.moveTo(x+38,yy+28);
-        ctx.quadraticCurveTo(x+42,yy+30,x+45,yy+27);
-        ctx.stroke();
-
-        // Hoodie strings
-        ctx.strokeStyle='#dbeafe';
-        ctx.lineWidth=1.5;
-        ctx.beginPath();ctx.moveTo(x+29,yy+35);ctx.lineTo(x+29,yy+47);ctx.stroke();
-        ctx.beginPath();ctx.moveTo(x+34,yy+35);ctx.lineTo(x+35,yy+47);ctx.stroke();
-
-        // highlight
-        ctx.strokeStyle='rgba(255,255,255,.18)';
-        ctx.lineWidth=2;
-        ctx.beginPath();
-        ctx.moveTo(x+19,yy+39);
-        ctx.lineTo(x+18,yy+61);
-        ctx.stroke();
-
+        ctx.fillStyle='#101216';ctx.beginPath();
+        ctx.moveTo(24,15);ctx.quadraticCurveTo(22,-9,44,0);ctx.quadraticCurveTo(66,-8,71,14);
+        ctx.quadraticCurveTo(58,8,50,14);ctx.quadraticCurveTo(40,7,31,18);ctx.closePath();ctx.fill();
+        ctx.fillStyle='#111';ctx.beginPath();ctx.arc(52,20,2.4,0,Math.PI*2);ctx.fill();
+        ctx.strokeStyle='#6f3f30';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(50,32);ctx.quadraticCurveTo(55,35,60,31);ctx.stroke();
         ctx.restore();
     }
 
